@@ -1,0 +1,5 @@
+*.nuget.cache
+*.dll
+*.pdb
+\obj
+\bin
