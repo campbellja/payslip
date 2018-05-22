@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace payslip
+namespace Payslip.Program
 {
     class Program
     {

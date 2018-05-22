@@ -8,7 +8,7 @@
             "command": "dotnet build",
             "type": "shell",
             "group": {
-                "kind": "test",
+                "kind": "build",
                 "isDefault": true
             },
             "presentation": {

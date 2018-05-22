@@ -1,9 +1,7 @@
 using System;
 
-namespace payslip.tests
+namespace Payslip.Model
 {
-
-
     // $0 - $18,200         Nil Nil
     // $18,201 - $37,000    19c for each $1 over $18,200
     // $37,001 - $87,000    $3,572 plus 32.5c for each $1 over $37,000
@@ -48,7 +46,10 @@ namespace payslip.tests
 
         // taxAmountOverMinIncome = (Income - MinIncomeThresholdAmount) x rateForEachDollarOverMinIncome;
         public decimal CalculateTaxAmountOverMinIncome(decimal salary)
-        {
+        {            
+            if(!RateForDollarsOverMinIncome.HasValue){
+                return 0.0M;
+            }
             decimal minIncomeThresholdAmount;
             if (MinIncome > 0)
             {
@@ -64,7 +65,7 @@ namespace payslip.tests
         }
 
         //incomeTax = (BaseTaxAmount + taxAmountOverMinIncome) / monthsInOneYear = incomeTax (rounded up)
-        internal decimal CalculateIncomeTax(decimal salary)
+        public decimal CalculateIncomeTax(decimal salary)
         {
             if (!BaseTaxAmount.HasValue && !RateForDollarsOverMinIncome.HasValue)
             {

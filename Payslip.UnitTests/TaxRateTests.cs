@@ -2,8 +2,9 @@ using System;
 using Xunit;
 using Shouldly;
 using System.Collections.Generic;
+using Payslip.Model;
 
-namespace payslip.tests
+namespace Payslip.UnitTests
 {
     public class TaxRateTests
     {
@@ -59,6 +60,7 @@ namespace payslip.tests
             //$87,001 - $180,000 $19,822 plus 37c for each $1 over $87,000
             new TaxRate(87001M, 180000M, 19822M, 0.37M).CalculateIncomeTax(120000M).ShouldBe(2669M);
             new TaxRate(37001M, 87000M, 3572M, 0.325M).CalculateIncomeTax(60050M).ShouldBe(922M);
+            new TaxRate(37001M, 87000M, 3572M, null).CalculateIncomeTax(60050M).ShouldBe(3572M);
         }
     }
 }

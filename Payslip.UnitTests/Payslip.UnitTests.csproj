@@ -14,4 +14,8 @@
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Payslip.Model\Payslip.Model.csproj" />
+  </ItemGroup>
+
 </Project>
