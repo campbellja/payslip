@@ -10,6 +10,7 @@ namespace Payslip.Model
         
         /**0% - 50% inclusive  */         
         public double SuperRate{get;set;}
-        public DateTime PaymentStartDate{get;set;}
+        public DateTime PaymentPeriodStartDate{get;set;}
+        public DateTime PaymentPeriodEndDate { get; set; }
     }
 }

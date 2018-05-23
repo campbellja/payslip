@@ -47,7 +47,8 @@ namespace Payslip.Model
         // taxAmountOverMinIncome = (Income - MinIncomeThresholdAmount) x rateForEachDollarOverMinIncome;
         public decimal CalculateTaxAmountOverMinIncome(decimal salary)
         {            
-            if(!RateForDollarsOverMinIncome.HasValue){
+            if(!RateForDollarsOverMinIncome.HasValue)
+            {
                 return 0.0M;
             }
             decimal minIncomeThresholdAmount;
@@ -73,7 +74,16 @@ namespace Payslip.Model
             }
             const int monthsInOneYear = 12;
             var taxAmountOverMinIncome = CalculateTaxAmountOverMinIncome(salary);
-            var incomeTax = (BaseTaxAmount.Value + taxAmountOverMinIncome) / ((Decimal)monthsInOneYear);
+            decimal baseTax;
+            if (BaseTaxAmount.HasValue)
+            {
+                baseTax = BaseTaxAmount.Value;
+            }
+            else
+            {
+                baseTax = 0.0M;
+            }
+            var incomeTax = (baseTax + taxAmountOverMinIncome) / monthsInOneYear;
             var incomeTaxRounded = Math.Round(incomeTax, 0);
             return incomeTaxRounded;
         }

@@ -36,7 +36,7 @@ namespace Payslip.UnitTests
                 new object[] { 0M, 18200M, 60050M, false },
           };
 
-
+        
         [Fact]
         public void CalculateTaxAmountOverMinIncome_ReturnsTaxForTaxRate()
         {
@@ -55,12 +55,38 @@ namespace Payslip.UnitTests
         }
 
         [Fact]
+        public void CalculateIncomeTax_NoBaseTaxAmountSpecified_ReturnsTaxAmountOverMinIncome()
+        {
+            //= 7,491.25 / 12 months 
+            //= 624.27083333333333333333333333333
+            // arrange, act & assert
+            new TaxRate(37001M, maxIncome:87000M, rateForDollarsOverMinIncome:0.325M)
+                .CalculateIncomeTax(60050M).ShouldBe(624M);
+        }
+
+        [Fact]
         public void CalculateIncomeTax()
         {
             //$87,001 - $180,000 $19,822 plus 37c for each $1 over $87,000
             new TaxRate(87001M, 180000M, 19822M, 0.37M).CalculateIncomeTax(120000M).ShouldBe(2669M);
             new TaxRate(37001M, 87000M, 3572M, 0.325M).CalculateIncomeTax(60050M).ShouldBe(922M);
-            new TaxRate(37001M, 87000M, 3572M, null).CalculateIncomeTax(60050M).ShouldBe(3572M);
+        }
+
+        [Fact]
+        public void CalculateTaxAmountOverMinIncome_RateForDollarsOverMinIncomeNotSpecified_ReturnsZero()
+        {
+            // arrange, act & assert
+            new TaxRate(37001M, 87000M, 3572M).CalculateTaxAmountOverMinIncome(60050M).ShouldBe(0.0M);
+        }
+
+        [Fact]
+        public void CalculateIncomeTax_RateForDollarsOverMinIncomeNotSpecified_ReturnsBaseTaxAmount()
+        {
+            // arrange
+            const decimal wholeBaseTaxAmountPerMonth = 298M;
+            // act & assert
+            new TaxRate(37001M, 87000M, 3572M).CalculateIncomeTax(60050M)
+                .ShouldBe(wholeBaseTaxAmountPerMonth);
         }
     }
 }
