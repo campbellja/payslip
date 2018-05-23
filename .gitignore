@@ -3,3 +3,6 @@
 *.pdb
 \obj
 \bin
+
+.vs/
+.vscode/
