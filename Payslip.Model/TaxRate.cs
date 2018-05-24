@@ -27,9 +27,9 @@ namespace Payslip.Model
 
         public static TaxRate Create(decimal minIncome, decimal? maxIncome = null, decimal? rateValue = null, decimal? baseTaxAmount = null)
         {
-            return new TaxRate(minIncome, maxIncome, baseTaxAmount, rateValue);
+            return new TaxRate(minIncome, maxIncome, rateValue, baseTaxAmount);
         }
-        private TaxRate(decimal minIncome, decimal? maxIncome = null, decimal? baseTaxAmount = null, decimal? rateValue = null)
+        private TaxRate(decimal minIncome, decimal? maxIncome = null,  decimal? rateValue = null, decimal? baseTaxAmount = null)
         {
             if (minIncome < 0M)
             {

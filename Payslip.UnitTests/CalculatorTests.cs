@@ -33,25 +33,26 @@ namespace Payslip.UnitTests
         public void Calculate_TaxRatesInitialised_ReturnsPayslip()
         {
             // arrange
-            Employee[] input = new[] {
+            var input = new[] {
                 new Employee{
                     AnnualSalary = 60050M,
                     PaymentPeriodStartDate = new DateTime(2018,03,01),
                     PaymentPeriodEndDate = new DateTime(2018, 03, 31),
-                    SuperAnnuationRatePercentage  = 0.09M
+                    SuperAnnuationRatePercentage  = 0.09M,      
                 },
-                //new Employee{
-                //    AnnualSalary = 60050M,
-                //    PaymentPeriodStartDate = new DateTime(2018,03,01),
-                //    PaymentPeriodEndDate = new DateTime(2018, 06, 30),
-                //},
+                new Employee{
+                    AnnualSalary = 60050M,
+                    PaymentPeriodStartDate = new DateTime(2018,03,01),
+                    PaymentPeriodEndDate = new DateTime(2018, 06, 30),
+                },
             };
             // act
             var payslips = BuildCalculator().Calculate(input).ToArray();
             // assert   
             var payslip = payslips[0];
+            payslip.GrossIncome.ShouldBe(5004);            
             payslip.IncomeTax.ShouldBe(922M);
-            payslip.GrossIncome.ShouldBe(5004);
+            payslip.NetIncome.ShouldBe(4082M);
             payslip.Super.ShouldBe(450);
         }
 

@@ -9,7 +9,7 @@ namespace Payslip.UnitTests
     {
         private const decimal MonthsInYear = 12M;
 
-        private IEnumerable<TaxRate> _taxRates;
+        private readonly IEnumerable<TaxRate> _taxRates;
         public Calculator(IEnumerable<TaxRate> taxRates)
         {
             if (taxRates == null)
@@ -44,17 +44,19 @@ namespace Payslip.UnitTests
                 throw new ArgumentOutOfRangeException($"{nameof(Employee.AnnualSalary)} must not be a negative decimal", nameof(Employee.AnnualSalary));
             }
             var result = (from e in employees
+                          // from period in e.PaymentPeriods
                           let salary = e.AnnualSalary
                           let rate = _taxRates.Single(t => t.IsWithinIncomeRange(salary))
                           let superRate = e.SuperAnnuationRatePercentage
-                          let incomeTax = AmountByPaymentFrequencyRounded(rate.CalculateIncomeTax(salary))                              
+                          let incomeTax = rate.CalculateIncomeTax(salary).RoundToNearestDollar()                              
                           let grossIncome = AmountByPaymentFrequencyRounded(salary)
-                          //let netIncome = grossIncomeForFrequency - incomeTaxForFrequency
+                          let netIncome = (grossIncome - incomeTax).RoundToNearestDollar()
                           let super = CalculateSuperForGrossIncome(grossIncome, superRate)
                           select new EmployeePayslip
                          {
-                             IncomeTax = incomeTax,
-                             GrossIncome = grossIncome,
+                              GrossIncome = grossIncome,
+                              IncomeTax = incomeTax,
+                              NetIncome = netIncome,
                              Super = super
                          }
              );
