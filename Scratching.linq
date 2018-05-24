@@ -1,28 +1,109 @@
 <Query Kind="Program" />
 
-void Main()
+
+interface ICalc
 {
-	(from salary in new[]{
-		5_400M,
-		24_500M,
-		60_500M,
-		120_000M
-	}
-	let rate = TaxRates.Single(t=>t.IsWithinIncomeRange(salary))
-	let monthlyIncomeTax = rate.CalculateIncomeTax(salary)
-	select new{
-		Salary = salary,
-		TaxRate = rate.CalculateTaxAmountOverMinIncome(salary),
-		Monthly_IncomeTax = monthlyIncomeTax,
-		Yearly_IncomeTax = monthlyIncomeTax * 12
-	})
-	.Dump();
+	decimal AmountByPaymentFrequency(decimal amount);
 }
 
-decimal CalculateTax(decimal x)
+class MonthlyPaymentCalc : ICalc
 {
-	throw new NotImplementedException();
+	public decimal AmountByPaymentFrequency(decimal amount)
+	{		
+		return amount / 12;		
+	}
 }
+
+class FortnightlyPaymentCalc : ICalc
+{
+	public decimal AmountByPaymentFrequency(decimal amount)
+	{
+		return amount / 26;		
+	}
+}
+
+static class Decimal_Extensions
+{
+	public static decimal RoundUp(this decimal @decimal){
+		return Math.Round(@decimal, 0, MidpointRounding.AwayFromZero);
+	}
+	public static decimal RoundDown(this decimal @decimal)
+	{
+		return Math.Floor(@decimal);
+	}
+}
+
+void Main()
+{
+	
+
+	(from input in new[]{
+		new Tuple<decimal,decimal>(5_400M,0.09M),
+		new Tuple<decimal,decimal>(24_500M,0.09M),
+		new Tuple<decimal,decimal>(60_050M,0.09M),
+		new Tuple<decimal,decimal>(120_000M,0.10M)
+	}
+	 from calc in new ICalc[]{
+		 new MonthlyPaymentCalc(),		 
+	}	
+	let salary = input.Item1
+	let superRatePercentage = input.Item2
+	let rate = TaxRates.Single(t=>t.IsWithinIncomeRange(salary))
+	
+	let incomeTaxForFrequency = calc.AmountByPaymentFrequency(rate.CalculateIncomeTax(salary))
+		.RoundUp()
+	let grossIncomeForFrequency = calc.AmountByPaymentFrequency(salary).RoundDown()
+	let netIncome = grossIncomeForFrequency - incomeTaxForFrequency
+	let super = CalculateSuperForGrossIncome(grossIncomeForFrequency, superRatePercentage).RoundDown()
+	select new
+	{
+		For = (calc is MonthlyPaymentCalc)?"Monthly":"Fortnightly",		
+		Salary = salary,
+		TaxRate = rate.CalculateTaxAmountOverMinIncome(salary),
+		GrossIncome = grossIncomeForFrequency,
+		IncomeTax = incomeTaxForFrequency,		
+		NetIncome = netIncome,		
+		Super = super
+		
+		
+		
+	})
+	.Dump();
+
+	// https://stackoverflow.com/questions/14/difference-between-math-floor-and-math-truncate/580252#580252
+	var raw = 60_050M / 12M;
+	Math.Round(raw, 0, MidpointRounding.AwayFromZero).Dump("Math.Round(raw,0,MidpointRounding.AwayFromZero");
+	Math.Round(raw, 0, MidpointRounding.ToEven).Dump("Math.Round(raw,0,MidpointRounding.ToEven");
+	Math.Ceiling(raw).Dump("Math.Ceiling(raw)");
+	Math.Floor(raw).Dump("Math.Floor(raw)");
+
+}
+
+public class CalculationContext
+{
+	public decimal Salary{get;set;}
+	public PaymentPeriod PaymentPeriod {get;set;}
+	
+	public CalculationContext(decimal salary, PaymentPeriod paymentPeriod)
+	{
+		Salary = salary;
+		PaymentPeriod = paymentPeriod;
+	}
+}
+
+decimal CalculateSuperForGrossIncome(decimal grossIncome, decimal ratePercentage)
+{
+	return grossIncome * ratePercentage;
+}
+
+public enum PaymentPeriod
+{
+	Unknown = 0,
+	Fortnightly,
+	Monthly
+}
+
+
 
 // Supplied 2018 Tax Table:
 // $0 - $18,200         Nil Nil
@@ -88,7 +169,6 @@ public sealed class TaxRate
 
 	public bool IsWithinIncomeRange(decimal salary) => salary >= MinIncome && (!MaxIncome.HasValue || (salary <= MaxIncome));
 
-
 	// taxAmountOverMinIncome = (Income - MinIncomeThresholdAmount) x rateForEachDollarOverMinIncome;
 	public decimal CalculateTaxAmountOverMinIncome(decimal salary)
 	{
@@ -111,14 +191,14 @@ public sealed class TaxRate
 	}
 
 	//incomeTax = (BaseTaxAmount + taxAmountOverMinIncome) / monthsInOneYear = incomeTax (rounded up)
-	public decimal CalculateIncomeTax(decimal salary)
-	{
+	public decimal CalculateIncomeTax(decimal annualSalary)
+	{	
 		if (!BaseTaxAmount.HasValue && !RateValue.HasValue)
 		{
 			return 0.0M;
 		}
-		const int monthsInOneYear = 12;
-		var taxAmountOverMinIncome = CalculateTaxAmountOverMinIncome(salary);
+		
+		var taxAmountOverMinIncome = CalculateTaxAmountOverMinIncome(annualSalary);
 		decimal baseTax;
 		if (BaseTaxAmount.HasValue)
 		{
@@ -128,8 +208,7 @@ public sealed class TaxRate
 		{
 			baseTax = 0.0M;
 		}
-		var incomeTax = (baseTax + taxAmountOverMinIncome) / monthsInOneYear;
-		var incomeTaxRounded = Math.Round(incomeTax, 0);
-		return incomeTaxRounded;
+		return baseTax + taxAmountOverMinIncome;
 	}
+
 }
