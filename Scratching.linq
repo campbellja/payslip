@@ -4,6 +4,7 @@
 interface ICalc
 {
 	decimal AmountByPaymentFrequency(decimal amount);
+	int PaymentPeriodsInDateRange(DateTime from, DateTime to);
 }
 
 class MonthlyPaymentCalc : ICalc
@@ -11,6 +12,12 @@ class MonthlyPaymentCalc : ICalc
 	public decimal AmountByPaymentFrequency(decimal amount)
 	{		
 		return amount / 12;		
+	}
+
+	public int PaymentPeriodsInDateRange(DateTime from, DateTime to)
+	{
+		//HACK for now
+		return (int)((from - to).Days / 12);
 	}
 }
 
@@ -20,7 +27,12 @@ class FortnightlyPaymentCalc : ICalc
 	{
 		return amount / 26;		
 	}
+	public int PaymentPeriodsInDateRange(DateTime from, DateTime to){
+		return (int) ((from - to ).TotalDays / 26);
+	}	
 }
+
+
 
 static class Decimal_Extensions
 {
@@ -33,28 +45,36 @@ static class Decimal_Extensions
 	}
 }
 
+public class Input
+{
+	public decimal AnnualSalary{get;set;}
+	public decimal SuperAnnuationRatePercentage{get;set;}
+}
+
 void Main()
 {
+	new DateTime(2018,3,1).Subtract(new DateTime(2018,6,30))
+	.Days
+	.Dump();
 	
-
 	(from input in new[]{
-		new Tuple<decimal,decimal>(5_400M,0.09M),
-		new Tuple<decimal,decimal>(24_500M,0.09M),
-		new Tuple<decimal,decimal>(60_050M,0.09M),
-		new Tuple<decimal,decimal>(120_000M,0.10M)
+		new Input{AnnualSalary = 5_400M,   	SuperAnnuationRatePercentage = 0.09M},
+		new Input{AnnualSalary = 24_500M,	SuperAnnuationRatePercentage = 0.09M},
+		new Input{AnnualSalary = 60_050M,   SuperAnnuationRatePercentage = 0.09M},
+		new Input{AnnualSalary = 120_000M,  SuperAnnuationRatePercentage = 0.10M}
 	}
 	 from calc in new ICalc[]{
 		 new MonthlyPaymentCalc(),		 
 	}	
-	let salary = input.Item1
-	let superRatePercentage = input.Item2
+	let salary = input.AnnualSalary
+	let superRate = input.SuperAnnuationRatePercentage
 	let rate = TaxRates.Single(t=>t.IsWithinIncomeRange(salary))
 	
 	let incomeTaxForFrequency = calc.AmountByPaymentFrequency(rate.CalculateIncomeTax(salary))
 		.RoundUp()
 	let grossIncomeForFrequency = calc.AmountByPaymentFrequency(salary).RoundDown()
 	let netIncome = grossIncomeForFrequency - incomeTaxForFrequency
-	let super = CalculateSuperForGrossIncome(grossIncomeForFrequency, superRatePercentage).RoundDown()
+	let super = CalculateSuperForGrossIncome(grossIncomeForFrequency, superRate).RoundDown()
 	select new
 	{
 		For = (calc is MonthlyPaymentCalc)?"Monthly":"Fortnightly",		
@@ -63,10 +83,7 @@ void Main()
 		GrossIncome = grossIncomeForFrequency,
 		IncomeTax = incomeTaxForFrequency,		
 		NetIncome = netIncome,		
-		Super = super
-		
-		
-		
+		Super = super		
 	})
 	.Dump();
 
