@@ -1,8 +1,8 @@
 using System;
 using Xunit;
 using Shouldly;
-using Payslip.Model;
 using System.Collections.Generic;
+using Payslip.Model;
 using System.Linq;
 
 namespace Payslip.UnitTests
@@ -10,13 +10,15 @@ namespace Payslip.UnitTests
     public class CalculatorTests
     {
         [Fact]
-        public void Employee_AnnualSalary_ThrowsArgumentOutOfRangeException(){
+        public void Employee_NegativeAnnualSalary_ThrowsArgumentOutOfRangeException(){
             // arrange
-            var sut = BuildPayslipCalculator();
+            var sut = BuildCalculator();
             // act & assert
             Assert.Throws<ArgumentOutOfRangeException>(()=>
-                sut.Calculate(new Employee{
-                    AnnualSalary = -1M
+                sut.Calculate(new[] {
+                    new Employee{
+                        AnnualSalary = -1M
+                    }
                 })
             );                        
         }
@@ -28,38 +30,40 @@ namespace Payslip.UnitTests
         }
 
         [Fact]
-        public void Calculate_TaxRatesInitialised_ReturnsPayslip(){
-            
-            // arrange & act
-            var payslip = new Calculator(new[]{
-                new TaxRate(37001M, 87000M, 3572M, 0.325M)
-            }).Calculate(new Employee{
-                AnnualSalary = 60050M,
-                PaymentPeriodStartDate = new DateTime(2018,03,01),
-                PaymentPeriodEndDate = new DateTime(2018, 03, 31),
-            });
+        public void Calculate_TaxRatesInitialised_ReturnsPayslip()
+        {
+            // arrange
+            Employee[] input = new[] {
+                new Employee{
+                    AnnualSalary = 60050M,
+                    PaymentPeriodStartDate = new DateTime(2018,03,01),
+                    PaymentPeriodEndDate = new DateTime(2018, 03, 31),
+                    SuperAnnuationRatePercentage  = 0.09M
+                },
+                //new Employee{
+                //    AnnualSalary = 60050M,
+                //    PaymentPeriodStartDate = new DateTime(2018,03,01),
+                //    PaymentPeriodEndDate = new DateTime(2018, 06, 30),
+                //},
+            };
+            // act
+            var payslips = BuildCalculator().Calculate(input).ToArray();
             // assert   
+            var payslip = payslips[0];
             payslip.IncomeTax.ShouldBe(922M);
             payslip.GrossIncome.ShouldBe(5004);
+            payslip.Super.ShouldBe(450);
+        }
+
+        private Calculator BuildCalculator()
+        {
+            return new Calculator(TaxRates);
         }
 
         [Fact]
-        public void Calculate_PaymentPeriodSpansMultipleMonths_ReturnsPayslip()
+        public void PaymentFrequencyTotalPeriods_DateRange_ReturnsTotalPeriods()
         {
 
-            // arrange & act
-            var payslip = new Calculator(new[]{
-                new TaxRate(37001M, 87000M, 3572M, 0.325M)
-            }).Calculate(new Employee
-            {
-                AnnualSalary = 60050M,
-                PaymentPeriodStartDate = new DateTime(2018, 03, 01),
-                PaymentPeriodEndDate = new DateTime(2018, 06, 30),
-            });
-
-            // assert   
-            payslip.IncomeTax.ShouldBe(922M);
-            payslip.GrossIncome.ShouldBe(5004);
         }
 
         Employee BuildValidEmployee()
@@ -67,104 +71,26 @@ namespace Payslip.UnitTests
             return new Employee{AnnualSalary = 95000M};
         }
 
-        private IEnumerable<TaxRate> _taxRates = new[]{
-            new TaxRate(37001M, 87000M, 3572M, 0.325M)
+        // Supplied 2018 Tax Table:
+        // $0 - $18,200         Nil Nil
+        // $18,201 - $37,000    19c for each $1 over $18,200
+        // $37,001 - $87,000    $3,572 plus 32.5c for each $1 over $37,000
+        // $87,001 - $180,000   $19,822 plus 37c for each $1 over $87,000
+        // $180,001 and over    $54,232 plus 45c for each $1 over $180,000 
+        TaxRate[] TaxRates => new[]{
+            TaxRate.NilTaxRate( 0M, 18_200M),
+            TaxRate.Create( 18_201M, 37_000M, 0.19M),
+            TaxRate.Create( 37_001M, 87_000M, 0.325M,  3_572M ),
+            TaxRate.Create( 87_001M, 180_000M, 0.37M, 19_822M),
+            TaxRate.TopTierRate( 180_001M, 0.45M, 54_232M ),
         };
-
-        Calculator BuildPayslipCalculator(){
-            var result = new Calculator(_taxRates);
-            return result;
-        }
-        
+                        
         [Fact]
-        public void AnnualSalary_NegativeValue_ThrowsArgumentOutOfRangeException()
+        public void RoundUp_DecimalGreaterThanEqualTo50_RoundToNextDollar()
         {
-            var account = new Account{AnnualSalary = -0.01M};
-            Assert.Throws<ArgumentOutOfRangeException>(()=>Calculate(account));            
-        }
-
-        [Fact]
-        public void AnnualSalary_Calculate_GrossIncomeRounded()
-        {
-            var result = Calculate(new Account{AnnualSalary = 60050M});
-            
-            result.GrossIncome.ShouldBe(5004M);
-        }
-        class Calculation
-        {
-            public decimal GrossIncome { get; internal set; }
-            public decimal IncomeTax{get; internal set;}
-        }
-        private Calculation Calculate(Account account)
-        {
-            if(account.AnnualSalary < 0M){
-                throw new ArgumentOutOfRangeException();
-            }
-            var grossIncome = account.AnnualSalary / 12;
-            
-            var grossIncomeRounded = Math.Round(grossIncome, 0);
-            return new Calculation{GrossIncome = grossIncomeRounded};
+            0.50M.RoundUpToNearestDollar().ShouldBe(1M);
+            0.50M.RoundDownToNearestDollar().ShouldBe(0M);
         }
     }
-
-
-    class Account{
-         public string FirstName{get;set;}
-         public string LastName{get;set;}
-         public Decimal AnnualSalary{get;set;}
-         public double SuperRate{get;set;}
-    }
-
-    public class Calculator
-    {
-        private const decimal MonthsInYear = 12M;
-
-        private IEnumerable<TaxRate> _taxRates;
-        public Calculator(IEnumerable<TaxRate> taxRates)
-        {
-            if (taxRates == null)
-            {
-                throw new ArgumentNullException(nameof(taxRates));
-            }
-            if (!taxRates.Any())
-            {
-                throw new ArgumentException($"At least one tax rate must be specified", nameof(taxRates));
-            }
-            _taxRates = taxRates;
-        }
-
-        public EmployeePayslip Calculate(Employee employee)
-        {
-            
-            if (employee.AnnualSalary < 0M)
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(employee.AnnualSalary)} must not be a negative decimal", nameof(employee.AnnualSalary));
-            }
-            var taxRate = _taxRates.FirstOrDefault(x => x.IsWithinIncomeRange(employee.AnnualSalary));
-            var incomeTax = taxRate.CalculateIncomeTax(employee.AnnualSalary);
-            
-            var grossIncome = GrossIncomePerMonth(employee);
-            return new EmployeePayslip
-            {
-                IncomeTax = incomeTax,
-                GrossIncome = grossIncome
-            };
-        }
-
-        private static decimal GrossIncomePerMonth(Employee employee)
-        {
-            return Math.Round((employee.AnnualSalary / MonthsInYear), 0, MidpointRounding.AwayFromZero);
-        }
-    }
-
-    public class EmployeePayslip
-    {
-        public string Name { get; set; }
-        public string PayPeriod { get; set; }
-        public decimal GrossIncome { get; set; }
-        public decimal IncomeTax { get; set; }
-        public decimal NetIncome { get; set; }
-        public decimal Super { get; set; }
-
-    }
+    
 }

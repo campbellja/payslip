@@ -9,7 +9,7 @@ namespace Payslip.Model
         public decimal AnnualSalary{get;set;}
         
         /**0% - 50% inclusive  */         
-        public double SuperRate{get;set;}
+        public decimal SuperAnnuationRatePercentage {get;set;}
         public DateTime PaymentPeriodStartDate{get;set;}
         public DateTime PaymentPeriodEndDate { get; set; }
     }

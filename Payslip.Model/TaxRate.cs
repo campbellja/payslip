@@ -13,11 +13,23 @@ namespace Payslip.Model
         public decimal MinIncome { get; set; }
         public decimal? MaxIncome { get; set; }
         public decimal? BaseTaxAmount { get; set; }
-        public decimal? RateForDollarsOverMinIncome { get; set; }
+        public decimal? RateValue { get; set; }
+        
+        public static TaxRate NilTaxRate(decimal minIncome, decimal maxIncome)
+        {
+            return new TaxRate(minIncome, maxIncome);
+        }
+        
+        public static TaxRate TopTierRate(decimal minIncome, decimal? rateValue = null, decimal? baseTaxAmount = null)
+        {
+            return new TaxRate(minIncome, null, rateValue, baseTaxAmount);
+        }
 
-        public TaxRate(decimal minIncome, decimal maxIncome) : this(minIncome, maxIncome, null, null) { }
-
-        public TaxRate(decimal minIncome, decimal? maxIncome = null, decimal? baseTaxAmount = null, decimal? rateForDollarsOverMinIncome = null)
+        public static TaxRate Create(decimal minIncome, decimal? maxIncome = null, decimal? rateValue = null, decimal? baseTaxAmount = null)
+        {
+            return new TaxRate(minIncome, maxIncome, baseTaxAmount, rateValue);
+        }
+        private TaxRate(decimal minIncome, decimal? maxIncome = null, decimal? baseTaxAmount = null, decimal? rateValue = null)
         {
             if (minIncome < 0M)
             {
@@ -38,7 +50,7 @@ namespace Payslip.Model
             MinIncome = minIncome;
             MaxIncome = maxIncome;
             BaseTaxAmount = baseTaxAmount;
-            RateForDollarsOverMinIncome = rateForDollarsOverMinIncome;
+            RateValue = rateValue;
         }
 
         public bool IsWithinIncomeRange(decimal salary) => salary >= MinIncome && (!MaxIncome.HasValue || (salary <= MaxIncome));
@@ -47,7 +59,7 @@ namespace Payslip.Model
         // taxAmountOverMinIncome = (Income - MinIncomeThresholdAmount) x rateForEachDollarOverMinIncome;
         public decimal CalculateTaxAmountOverMinIncome(decimal salary)
         {            
-            if(!RateForDollarsOverMinIncome.HasValue)
+            if(!RateValue.HasValue)
             {
                 return 0.0M;
             }
@@ -60,7 +72,7 @@ namespace Payslip.Model
             {
                 minIncomeThresholdAmount = MinIncome;
             }
-            var rate = RateForDollarsOverMinIncome.Value;
+            var rate = RateValue.Value;
             var taxAmountOverMinIncome = (salary - minIncomeThresholdAmount) * rate;
             return taxAmountOverMinIncome;
         }
@@ -68,7 +80,7 @@ namespace Payslip.Model
         //incomeTax = (BaseTaxAmount + taxAmountOverMinIncome) / monthsInOneYear = incomeTax (rounded up)
         public decimal CalculateIncomeTax(decimal salary)
         {
-            if (!BaseTaxAmount.HasValue && !RateForDollarsOverMinIncome.HasValue)
+            if (!BaseTaxAmount.HasValue && !RateValue.HasValue)
             {
                 return 0.0M;
             }
@@ -84,8 +96,8 @@ namespace Payslip.Model
                 baseTax = 0.0M;
             }
             var incomeTax = (baseTax + taxAmountOverMinIncome) / monthsInOneYear;
-            var incomeTaxRounded = Math.Round(incomeTax, 0);
-            return incomeTaxRounded;
+            
+            return incomeTax.RoundToNearestDollar();
         }
     }
 }
