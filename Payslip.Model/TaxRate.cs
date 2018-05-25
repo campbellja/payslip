@@ -2,18 +2,12 @@ using System;
 
 namespace Payslip.Model
 {
-    // $0 - $18,200         Nil Nil
-    // $18,201 - $37,000    19c for each $1 over $18,200
-    // $37,001 - $87,000    $3,572 plus 32.5c for each $1 over $37,000
-    // $87,001 - $180,000   $19,822 plus 37c for each $1 over $87,000
-    // $180,001 and over    $54,232 plus 45c for each $1 over $180,000        
-
     public sealed class TaxRate
     {
-        public decimal MinIncome { get; set; }
-        public decimal? MaxIncome { get; set; }
-        public decimal? BaseTaxAmount { get; set; }
-        public decimal? RateValue { get; set; }
+        private decimal MinIncome { get; }
+        private decimal? MaxIncome { get; }
+        private decimal? BaseTaxAmount { get; }
+        private decimal? RateValue { get; }
         
         public static TaxRate NilTaxRate(decimal minIncome, decimal maxIncome)
         {
@@ -54,15 +48,20 @@ namespace Payslip.Model
         }
 
         public bool IsWithinIncomeRange(decimal salary) => salary >= MinIncome && (!MaxIncome.HasValue || (salary <= MaxIncome));
-
-
-        // taxAmountOverMinIncome = (Income - MinIncomeThresholdAmount) x rateForEachDollarOverMinIncome;
+        
+        /// <summary>
+        /// Calculation: taxAmountOverMinIncome = (Income - MinIncomeThresholdAmount) x rateForEachDollarOverMinIncome;
+        /// </summary>
+        /// <param name="salary"></param>
+        /// <returns></returns>
         public decimal CalculateTaxAmountOverMinIncome(decimal salary)
         {            
             if(!RateValue.HasValue)
             {
                 return 0.0M;
             }
+
+            var rate = RateValue.Value;
             decimal minIncomeThresholdAmount;
             if (MinIncome > 0)
             {
@@ -72,31 +71,28 @@ namespace Payslip.Model
             {
                 minIncomeThresholdAmount = MinIncome;
             }
-            var rate = RateValue.Value;
-            var taxAmountOverMinIncome = (salary - minIncomeThresholdAmount) * rate;
-            return taxAmountOverMinIncome;
+            
+            return (salary - minIncomeThresholdAmount) * rate;            
         }
 
-        //incomeTax = (BaseTaxAmount + taxAmountOverMinIncome) / monthsInOneYear = incomeTax (rounded up)
+        private const int TotalMonthsInOneYear = 12;
+
+        /// <summary>
+        /// Calculates the income tax applicable to a specified salary for this TaxRate's income range.
+        /// Calculation: incomeTax = (BaseTaxAmount + taxAmountOverMinIncome) / TotalMonthsInOneYear = incomeTax (rounded)
+        /// </summary>
+        /// <param name="salary"></param>
+        /// <returns></returns>
         public decimal CalculateIncomeTax(decimal salary)
         {
             if (!BaseTaxAmount.HasValue && !RateValue.HasValue)
             {
                 return 0.0M;
             }
-            const int monthsInOneYear = 12;
-            var taxAmountOverMinIncome = CalculateTaxAmountOverMinIncome(salary);
-            decimal baseTax;
-            if (BaseTaxAmount.HasValue)
-            {
-                baseTax = BaseTaxAmount.Value;
-            }
-            else
-            {
-                baseTax = 0.0M;
-            }
-            var incomeTax = (baseTax + taxAmountOverMinIncome) / monthsInOneYear;
             
+            var baseTax = BaseTaxAmount.GetValueOrDefault();
+            var taxAmountOverMinIncome = CalculateTaxAmountOverMinIncome(salary);
+            var incomeTax = (baseTax + taxAmountOverMinIncome) / TotalMonthsInOneYear;
             return incomeTax.RoundToNearestDollar();
         }
     }

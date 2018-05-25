@@ -10,7 +10,15 @@ namespace Payslip.Model
         
         /**0% - 50% inclusive  */         
         public decimal SuperAnnuationRatePercentage {get;set;}
-        public DateTime PaymentPeriodStartDate{get;set;}
-        public DateTime PaymentPeriodEndDate { get; set; }
+        public PaymentPeriod PaymentPeriod { get; set; }
+        public bool IsWholeNumber { get; set; }
+
+        internal Guid Id { get; set; }
+    }
+
+    public class PaymentPeriod
+    {
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
     }
 }
