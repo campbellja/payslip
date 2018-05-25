@@ -1,5 +1,7 @@
-<Query Kind="Program" />
-
+<Query Kind="Program">
+  <NuGetReference>CsvHelper</NuGetReference>
+  <Namespace>CsvHelper</Namespace>
+</Query>
 
 interface ICalc
 {
@@ -51,8 +53,31 @@ public class Input
 	public decimal SuperAnnuationRatePercentage{get;set;}
 }
 
+
+public class Record
+{
+	public string FirstName{ get; set; }
+	public string LastName{ get; set; }
+	public string AnnualSalary{ get; set; }
+	public string SuperRate{ get; set; }
+	public string PaymentStartDate { get; set; }
+	
+}
+
 void Main()
 {
+	var currentFolder = Path.GetDirectoryName( Util.CurrentQueryPath).Dump();
+	var csvFilePath = @"doc\input.csv";
+	var path = Path.Combine(currentFolder, csvFilePath);
+	path.Dump("Reading csv file...");
+	using (var streamReader = new StreamReader(File.OpenRead(path)))
+	using (var csvReader = new CsvReader(streamReader))
+	{
+		csvReader.Configuration.PrepareHeaderForMatch = header => header.Replace( "_", string.Empty ).ToLowerInvariant();
+		var result = csvReader.GetRecords<Record>().ToList();
+		result.Dump("Read Records");
+	}
+
 	new DateTime(2018,3,1).Subtract(new DateTime(2018,6,30))
 	.Days
 	.Dump();
@@ -107,6 +132,8 @@ public class CalculationContext
 		PaymentPeriod = paymentPeriod;
 	}
 }
+
+
 
 decimal CalculateSuperForGrossIncome(decimal grossIncome, decimal ratePercentage)
 {
