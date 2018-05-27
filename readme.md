@@ -34,8 +34,10 @@ Payslip is an asp.net core application
 ## Assumptions
 
 ### Pay Periods
-A Pay Period is defined as a date range of whole months; ranges for partial months are not valid input.
+`Whole Months`: A Pay Period is defined as a date range of whole months; ranges for partial months are not valid input.
 If the inputted date range exceeds one calender month, an additional payslip entry will be generated for the remainder.
+
+`Implicit Year`: Unless specified, the year of the inputted Pay Periods are implicitly the current year on the web server hosting Payslip.
 
 ### Output Format
 

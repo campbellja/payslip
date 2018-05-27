@@ -14,7 +14,7 @@ namespace Payslip.DataAccess
             using (var streamReader = new StreamReader(stream))
             using (var csvReader = new CsvReader(streamReader))
             {
-                csvReader.Configuration.RegisterClassMap<RecordClassMapping>();
+                csvReader.Configuration.RegisterClassMap<EmployeeClassMapping>();
                 csvReader.Configuration.PrepareHeaderForMatch = header => header.Replace("_", string.Empty).ToLowerInvariant();
                 return csvReader.GetRecords<T>().ToArray();
             }

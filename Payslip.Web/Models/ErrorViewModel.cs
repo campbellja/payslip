@@ -1,5 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
+using Payslip.DataAccess;
+using Payslip.Model;
+
 
 namespace Payslip.Web.Models
 {
@@ -11,8 +16,13 @@ namespace Payslip.Web.Models
     }
 
 
-    public class Submission
+    public class SubmissionModel
     {
+        [Required]
+        [Display(Description = "CSV File")]
         public IFormFile InputFile { get; set; }
+        public IEnumerable<EmployeePayslip> Results { get; set; }
+        public string Errors { get; set; }
     }
+
 }

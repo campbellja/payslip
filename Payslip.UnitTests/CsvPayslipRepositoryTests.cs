@@ -6,12 +6,16 @@ using Payslip.DataAccess;
 using Payslip.Model;
 using Shouldly;
 using Xunit;
-using Record = Payslip.DataAccess.Record;
 
 namespace Payslip.UnitTests
 {
     public sealed class CsvPayslipRepositoryTests
     {
+        private static FileStream CsvFile()
+        {
+            return File.OpenRead(Path.Combine(Directory.GetCurrentDirectory(), @"TestData\input.csv"));
+        }
+
         private static CsvPayslipRepository BuildCsvEmployeeRecordRepository()
         {
             return new CsvPayslipRepository();
@@ -22,42 +26,54 @@ namespace Payslip.UnitTests
         public void ReadRecordsFromStream_CsvFileStream_ReturnsRecords()
         {
             // arrange
+            var currentYear = DateTime.Today.Year;
             var inputCsvFile = CsvFile();
             var expectedRecords = new[]
             {
-                new Record
+                new Employee
                 {
                     FirstName="David",
                     LastName="Rudd",
                     AnnualSalary= 60050M,
                     SuperRate=0.09M,
-                    PaymentStartDate = "01 March - 31 March"
+                    PaymentStartDate = new PaymentPeriod(new DateTime(currentYear, 3, 1),new DateTime(currentYear, 3, 31))
                 },
-                new Record
+                new Employee
                 {
                     FirstName="Ryan",
                     LastName="Chen",
                     AnnualSalary=120000M,
                     SuperRate=0.1M,
-                    PaymentStartDate = "01 March - 31 March"
+                    PaymentStartDate = new PaymentPeriod(new DateTime(currentYear, 3, 1),new DateTime(currentYear, 3, 31))
+                },
+                new Employee
+                {
+                    FirstName="Alison",
+                    LastName="Harvey",
+                    AnnualSalary=125000M,
+                    SuperRate=0.1M,
+                    PaymentStartDate = new PaymentPeriod(new DateTime(currentYear, 6, 1),new DateTime(currentYear, 6, 30))
                 }
             };
-
-            // act
-            Record[] records;
+            
+             // act
+             Employee[] actualEmployees;
             using (var fileStream = inputCsvFile)
             {
-                records = BuildCsvEmployeeRecordRepository().ReadRecordsFromStream<Record>(fileStream).ToArray();
+                actualEmployees = BuildCsvEmployeeRecordRepository().ReadRecordsFromStream<Employee>(fileStream).ToArray();
             }
 
             // assert
             for (var i = 0; i < expectedRecords.Length; i++)
             {
-                records[i].FirstName.ShouldBe(expectedRecords[i].FirstName);
-                records[i].LastName.ShouldBe(expectedRecords[i].LastName);
-                records[i].AnnualSalary.ShouldBe(expectedRecords[i].AnnualSalary);
-                records[i].SuperRate.ShouldBe(expectedRecords[i].SuperRate);
-                records[i].PaymentStartDate.ShouldBe(expectedRecords[i].PaymentStartDate);
+                actualEmployees[i].FirstName.ShouldBe(expectedRecords[i].FirstName);
+                actualEmployees[i].LastName.ShouldBe(expectedRecords[i].LastName);
+                actualEmployees[i].AnnualSalary.ShouldBe(expectedRecords[i].AnnualSalary);
+                actualEmployees[i].SuperRate.ShouldBe(expectedRecords[i].SuperRate);
+                var actualPeriod = actualEmployees[i].PaymentStartDate;
+                var expectedPeriod = expectedRecords[i].PaymentStartDate;
+                actualPeriod.StartDate.ShouldBe(expectedPeriod.StartDate);
+                actualPeriod.EndDate.ShouldBe(expectedPeriod.EndDate);
             }
         }
 
@@ -68,15 +84,10 @@ namespace Payslip.UnitTests
             // arrange & act
             using (var fileStream = CsvFile())
             {
-                BuildCsvEmployeeRecordRepository().ReadRecordsFromStream<Record>(fileStream);
+                BuildCsvEmployeeRecordRepository().ReadRecordsFromStream<Employee>(fileStream);
                 // assert
                 Assert.Throws<ObjectDisposedException>(() => fileStream.ReadByte());
             }
-        }
-
-        private static FileStream CsvFile()
-        {
-            return File.OpenRead(Path.Combine(Directory.GetCurrentDirectory(), @"TestData\input.csv"));
         }
 
         [Category("Integration")]

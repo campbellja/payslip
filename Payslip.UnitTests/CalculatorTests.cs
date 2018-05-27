@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using Xunit;
 using Shouldly;
 using Payslip.Model;
 using System.Linq;
+using CsvHelper;
+using Payslip.DataAccess;
 
 namespace Payslip.UnitTests
 {
@@ -14,7 +18,7 @@ namespace Payslip.UnitTests
         // $37,001 - $87,000    $3,572 plus 32.5c for each $1 over $37,000
         // $87,001 - $180,000   $19,822 plus 37c for each $1 over $87,000
         // $180,001 and over    $54,232 plus 45c for each $1 over $180,000 
-        TaxRate[] TaxRates => new[]{
+        IEnumerable<TaxRate> TaxRates => new[]{
             TaxRate.NilTaxRate( 0M, 18_200M),
             TaxRate.Create( 18_201M, 37_000M, 0.19M),
             TaxRate.Create( 37_001M, 87_000M, 0.325M,  3_572M ),
@@ -22,32 +26,26 @@ namespace Payslip.UnitTests
             TaxRate.TopTierRate( 180_001M, 0.45M, 54_232M ),
         };
 
-        [Fact]
-        public void Employee_NegativeAnnualSalary_ThrowsArgumentOutOfRangeException(){
-            // arrange
-            var sut = BuildCalculator();
-            // act & assert
-            Assert.Throws<ArgumentOutOfRangeException>(()=>
-                sut.Calculate(new[] {
-                    new Employee{
-                        AnnualSalary = -1M
-                    }
-                })
-            );                        
-        }
+        //[Fact]
+        //public void Employee_NegativeAnnualSalary_ThrowsArgumentOutOfRangeException(){
+        //    // arrange
+        //    // act & assert
+        //    Assert.Throws<ArgumentOutOfRangeException>(()=>
+        //        new Employee
+        //        {
+        //            AnnualSalary = -1M
+        //        }
+        //    );                        
+        //}
 
         [Fact]
         public void Employee_AnnualSalaryNotInteger_ThrowsArgumentException()
         {
             // arrange
-            var sut = BuildCalculator();
             // act & assert
             Assert.Throws<ArgumentException>(() =>
-                sut.Calculate(new[] {
-                    new Employee{
-                        AnnualSalary = 1.01M
-                    }
-                })
+                    new Employee(BuildRandomString(), BuildRandomString(), 1.01M, 0M, new PaymentPeriod(new DateTime(2018, 3, 1), new DateTime(2018, 3, 31))
+                    )
             );
         }
 
@@ -66,28 +64,31 @@ namespace Payslip.UnitTests
                     FirstName = BuildRandomString(),
                     LastName = BuildRandomString(),
                     AnnualSalary = 60050M,
-                    PaymentPeriod = new PaymentPeriod
+                    PaymentStartDate = new PaymentPeriod
                     {
                         StartDate = new DateTime(2018,03,01),
                         EndDate = new DateTime(2018, 03, 31),
                     },
-                    SuperAnnuationRatePercentage  = 0.09M,
+                    SuperRate  = 0.09M,
                 },
                 new Employee{
                     FirstName = BuildRandomString(),
                     LastName = BuildRandomString(),
                     AnnualSalary = 60050M,
-                    PaymentPeriod = new PaymentPeriod
+                    PaymentStartDate = new PaymentPeriod
                     {
                         StartDate = new DateTime(2018,03,01),
                         EndDate = new DateTime(2018, 06, 30),
                     },
-                    SuperAnnuationRatePercentage  = 0.09M
+                    SuperRate  = 0.09M
                 }
             };
             // act
-            var payslips = BuildCalculator().Calculate(input).ToArray();
-            // assert                        
+            var validationContext = new ValidationContext();
+            var result = BuildCalculator().Calculate(input, validationContext);
+            validationContext.IsValid.ShouldBeTrue();
+            // assert 
+            var payslips = result.ToArray();
             foreach (var payslip in payslips)
             {
                 payslip.GrossIncome.ShouldBe(5004);
@@ -107,13 +108,7 @@ namespace Payslip.UnitTests
         {
             return new Calculator(TaxRates);
         }
-
-        [Fact]
-        public void PaymentFrequencyTotalPeriods_DateRange_ReturnsTotalPeriods()
-        {
-
-        }
-
+        
         Employee BuildValidEmployee()
         {            
             return new Employee{AnnualSalary = 95000M};
@@ -127,5 +122,4 @@ namespace Payslip.UnitTests
             0.50M.RoundDownToNearestDollar().ShouldBe(0M);
         }
     }
-    
 }

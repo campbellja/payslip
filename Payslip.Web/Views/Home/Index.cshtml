@@ -1,116 +1,96 @@
-﻿@{
+﻿@model SubmissionModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000">
-    <ol class="carousel-indicators">
-        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-        <li data-target="#myCarousel" data-slide-to="1"></li>
-        <li data-target="#myCarousel" data-slide-to="2"></li>
-        <li data-target="#myCarousel" data-slide-to="3"></li>
-    </ol>
-    <div class="carousel-inner" role="listbox">
-        <div class="item active">
-            <img src="~/images/banner1.svg" alt="ASP.NET" class="img-responsive" />
-            <div class="carousel-caption" role="option">
-                <p>
-                    Learn how to build ASP.NET apps that can run anywhere.
-                    <a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkID=525028&clcid=0x409">
-                        Learn More
-                    </a>
-                </p>
-            </div>
-        </div>
-        <div class="item">
-            <img src="~/images/banner2.svg" alt="Visual Studio" class="img-responsive" />
-            <div class="carousel-caption" role="option">
-                <p>
-                    There are powerful new features in Visual Studio for building modern web apps.
-                    <a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkID=525030&clcid=0x409">
-                        Learn More
-                    </a>
-                </p>
-            </div>
-        </div>
-        <div class="item">
-            <img src="~/images/banner3.svg" alt="Package Management" class="img-responsive" />
-            <div class="carousel-caption" role="option">
-                <p>
-                    Bring in libraries from NuGet and npm, and automate tasks using Grunt or Gulp.
-                    <a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkID=525029&clcid=0x409">
-                        Learn More
-                    </a>
-                </p>
-            </div>
-        </div>
-        <div class="item">
-            <img src="~/images/banner4.svg" alt="Microsoft Azure" class="img-responsive" />
-            <div class="carousel-caption" role="option">
-                <p>
-                    Learn how Microsoft's Azure cloud platform allows you to build, deploy, and scale web apps.
-                    <a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkID=525027&clcid=0x409">
-                        Learn More
-                    </a>
-                </p>
-            </div>
-        </div>
-    </div>
-    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
-        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-        <span class="sr-only">Previous</span>
-    </a>
-    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
-        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-        <span class="sr-only">Next</span>
-    </a>
-</div>
-
 <div class="row">
     <div class="col-md-3">
-        <h2>Application uses</h2>
-        <em>File must use UTF-8 Encoding Format</em>
-        <form method="post" enctype="multipart/form-data" asp-action="UploadFile">
+        <h2>Generate Payslips from Employee File</h2>
+        
+        @if (!String.IsNullOrEmpty(Model.Errors))
+        {
+            <p class="text-danger">@Model.Errors</p>
+        }
+        <form method="post" enctype="multipart/form-data" asp-action="Index">
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
+                <label asp-for="InputFile" class="control-label">Employee Details File</label>
+                <input asp-for="InputFile" type="file" class="form-control" />
+                <span asp-validation-for="InputFile" class="text-danger"></span>
+                <em>File must be in Comma-separated values (CSV) format.</em>
             </div>
             <div class="form-group">
-                <label asp-for="Avatar" class="control-label"></label>
-                <input asp-for="Avatar" type="file" class="form-control" />
+                <input type="submit" value="Upload" class="btn btn-default" />
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="Generate Payslips" class="btn btn-default" />
             </div>
         </form>
     </div>
-    <div class="col-md-3">
-        <h2>How to</h2>
-        <ul>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkID=398600">Add a Controller and View</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkId=699315">Manage User Secrets using Secret Manager.</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkId=699316">Use logging to log a message.</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkId=699317">Add packages using NuGet.</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkId=699319">Target development, staging or production environment.</a></li>
-        </ul>
+    <div class="col-md-9">
+        @if (Model.Results != null)
+    {
+        <h2>Results</h2>
+        <p>Employee Payslips</p>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Payment Period</th>
+                    <th>Gross Income</th>
+                    <th>Income Tax</th>
+                    <th>Net Income</th>
+                    <th>Super Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Results)
+            {
+                <tr>
+                    <td>@r.Name</td>
+                    <td>@r.PayPeriod</td>
+                    <td>@r.GrossIncome</td>
+                    <td>@r.IncomeTax</td>
+                    <td>@r.NetIncome</td>
+                    <td>@r.Super</td>
+                </tr>
+        }
+            </tbody>
+        </table>
+}
+else
+{
+    <p>
+        <span>CSV File must contain the following structure:</span>
+    </p>
+    <h3>Example:</h3>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>first_name,</th>
+            <th>last_name,</th>
+            <th>annual_salary,</th>
+            <th>super_rate,</th>
+            <th>payment_start_date</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><span>David,</span></td><td><span>Rudd,</span></td><td><span>60050,</span></td><td><span>9%,</span></td><td><span>01 March - 31 March</span></td>
+        </tr>
+        <tr>
+            <td><span>Ryan,</span></td><td><span>Chen,</span></td><td><span>120000,</span></td><td><span>10%,</span></td><td><span>01 March - 31 March</span></td>
+        </tr>
+        </tbody>
+    </table>
+    @*<em>File must contain the following structure:
+    first_name,last_name,annual_salary,super_rate,payment_start_date
+    David,Rudd,60050,9%,01 March - 31 March
+    Ryan,Chen,120000,10%,01 March - 31 March
+        </em>
+
+    *@
+
+}
     </div>
-    <div class="col-md-3">
-        <h2>Overview</h2>
-        <ul>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkId=518008">Conceptual overview of what is ASP.NET Core</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkId=699320">Fundamentals of ASP.NET Core such as Startup and middleware.</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkId=398602">Working with Data</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkId=398603">Security</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkID=699321">Client side development</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkID=699322">Develop on different platforms</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkID=699323">Read more on the documentation site</a></li>
-        </ul>
-    </div>
-    <div class="col-md-3">
-        <h2>Run &amp; Deploy</h2>
-        <ul>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkID=517851">Run your app</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkID=517853">Run tools such as EF migrations and more</a></li>
-            <li><a href="https://go.microsoft.com/fwlink/?LinkID=398609">Publish to Microsoft Azure Web Apps</a></li>
-        </ul>
-    </div>
+   
 </div>

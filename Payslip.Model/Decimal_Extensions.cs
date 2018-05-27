@@ -2,7 +2,7 @@
 
 namespace Payslip.Model
 {
-    static public class Decimal_Extensions
+    public static class Decimal_Extensions
     {
         public static decimal RoundUpToNearestDollar(this decimal @decimal) => Math.Ceiling(@decimal);
         public static decimal RoundDownToNearestDollar(this decimal @decimal) => Math.Floor(@decimal);
