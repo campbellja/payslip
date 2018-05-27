@@ -63,6 +63,23 @@ namespace Payslip.UnitTests
 
         [Category("Integration")]
         [Fact]
+        public void ReadRecordsFromStream_ReadFileStream_DisposesStream()
+        {
+            {
+                // arrange
+                var inputCsvFilePath = Path.Combine(Directory.GetCurrentDirectory(), @"TestData\input.csv");
+                // act
+                using (var fileStream = File.OpenRead(inputCsvFilePath))
+                {
+                    BuildCsvEmployeeRecordRepository().ReadRecordsFromStream<Record>(fileStream);
+                    // assert
+                    Assert.Throws<ObjectDisposedException>(() => fileStream.ReadByte());
+                }
+            }
+        }
+
+        [Category("Integration")]
+        [Fact]
         public void ReadRecordsFromStream_ClosedStream_ThrowsArgumentException()
         {
             // arrange
