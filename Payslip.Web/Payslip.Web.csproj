@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Payslip.Model\Payslip.Model.csproj" />
     <ProjectReference Include="..\Payslip.DataAccess\Payslip.DataAccess.csproj" />
+    <ProjectReference Include="..\Payslip.Service\Payslip.Service.csproj" />
   </ItemGroup>
 
 </Project>

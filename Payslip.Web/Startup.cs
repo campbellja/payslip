@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Payslip.DataAccess;
 using Payslip.Model;
+using Payslip.Service;
 using Payslip.Web.Controllers;
 
 namespace Payslip.Web

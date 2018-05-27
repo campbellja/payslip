@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 
 namespace Payslip.Model
 {
-    public interface IPayslipService
-    {
-        IEnumerable<EmployeePayslip> GeneratePayslipsFromStream(Stream stream, IValidationContext validationContext);
-    }
-
-
     public interface IValidationContext
     {
         bool IsValid { get; }
