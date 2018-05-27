@@ -1,6 +1,10 @@
 <Query Kind="Program">
   <NuGetReference>CsvHelper</NuGetReference>
   <Namespace>CsvHelper</Namespace>
+  <Namespace>CsvHelper.Configuration</Namespace>
+  <Namespace>CsvHelper.Configuration.Attributes</Namespace>
+  <Namespace>CsvHelper.Expressions</Namespace>
+  <Namespace>CsvHelper.TypeConversion</Namespace>
 </Query>
 
 interface ICalc
@@ -22,6 +26,7 @@ class MonthlyPaymentCalc : ICalc
 		return (int)((from - to).Days / 12);
 	}
 }
+
 
 class FortnightlyPaymentCalc : ICalc
 {
@@ -70,6 +75,8 @@ void Main()
 	var csvFilePath = @"doc\input.csv";
 	var path = Path.Combine(currentFolder, csvFilePath);
 	path.Dump("Reading csv file...");
+	
+	
 	using (var streamReader = new StreamReader(File.OpenRead(path)))
 	using (var csvReader = new CsvReader(streamReader))
 	{
