@@ -13,7 +13,7 @@
         }
         <form method="post" enctype="multipart/form-data" asp-action="Index">
             <div class="form-group">
-                <label asp-for="InputFile" class="control-label">Employee Details File</label>
+                <label asp-for="InputFile" class="control-label">Employee File</label>
                 <input asp-for="InputFile" type="file" class="form-control" />
                 <span asp-validation-for="InputFile" class="text-danger"></span>
                 <em>File must be in Comma-separated values (CSV) format.</em>
@@ -59,8 +59,9 @@
 }
 else
 {
+    <h3>Employee File Example</h3>
     <p>
-        <span>CSV File must contain the following structure:</span>
+        <span>Here's an example of the CSV header and record structure that the Employee File must contain:</span>
     </p>
     <h3>Example:</h3>
     <table class="table">
@@ -82,15 +83,6 @@ else
         </tr>
         </tbody>
     </table>
-    @*<em>File must contain the following structure:
-    first_name,last_name,annual_salary,super_rate,payment_start_date
-    David,Rudd,60050,9%,01 March - 31 March
-    Ryan,Chen,120000,10%,01 March - 31 March
-        </em>
-
-    *@
-
 }
     </div>
-   
 </div>

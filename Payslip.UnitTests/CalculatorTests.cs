@@ -12,41 +12,34 @@ namespace Payslip.UnitTests
 {
     public sealed class CalculatorTests
     {
-        // Supplied 2018 Tax Table:
-        // $0 - $18,200         Nil Nil
-        // $18,201 - $37,000    19c for each $1 over $18,200
-        // $37,001 - $87,000    $3,572 plus 32.5c for each $1 over $37,000
-        // $87,001 - $180,000   $19,822 plus 37c for each $1 over $87,000
-        // $180,001 and over    $54,232 plus 45c for each $1 over $180,000 
-        IEnumerable<TaxRate> TaxRates => new[]{
-            TaxRate.NilTaxRate( 0M, 18_200M),
-            TaxRate.Create( 18_201M, 37_000M, 0.19M),
-            TaxRate.Create( 37_001M, 87_000M, 0.325M,  3_572M ),
-            TaxRate.Create( 87_001M, 180_000M, 0.37M, 19_822M),
-            TaxRate.TopTierRate( 180_001M, 0.45M, 54_232M ),
-        };
-
-        //[Fact]
-        //public void Employee_NegativeAnnualSalary_ThrowsArgumentOutOfRangeException(){
-        //    // arrange
-        //    // act & assert
-        //    Assert.Throws<ArgumentOutOfRangeException>(()=>
-        //        new Employee
-        //        {
-        //            AnnualSalary = -1M
-        //        }
-        //    );                        
-        //}
-
         [Fact]
-        public void Employee_AnnualSalaryNotInteger_ThrowsArgumentException()
+        public void Calculate_EmployeeAnnualSalaryNegative_ReturnsValidationError()
         {
             // arrange
-            // act & assert
-            Assert.Throws<ArgumentException>(() =>
-                    new Employee(BuildRandomString(), BuildRandomString(), 1.01M, 0M, new PaymentPeriod(new DateTime(2018, 3, 1), new DateTime(2018, 3, 31))
-                    )
+            var validationContext = new ValidationContext();
+            const decimal annualSalary = -1.00M;
+            // act
+            BuildCalculator().Calculate(
+                new[] { new Employee(BuildRandomString(), BuildRandomString(), annualSalary, 0M, new PaymentPeriod(new DateTime(2018, 3, 1), new DateTime(2018, 3, 31))) },
+                validationContext
             );
+            // assert
+            validationContext.ValidationErrors.ShouldContain($"{nameof(annualSalary)} must not be a negative decimal, was: {annualSalary}");
+        }
+
+        [Fact]
+        public void Calculate_EmployeeAnnualSalaryNotInteger_ReturnsValidationError()
+        {
+            // arrange
+            var validationContext = new ValidationContext();
+            const decimal annualSalary = 1.01M;
+            // act
+            BuildCalculator().Calculate(
+                        new []{ new Employee(BuildRandomString(), BuildRandomString(), annualSalary, 0M, new PaymentPeriod(new DateTime(2018, 3, 1), new DateTime(2018, 3, 31))) },
+                        validationContext
+            );
+            // assert
+            validationContext.ValidationErrors.ShouldContain($"{nameof(annualSalary)} must be a whole number, was: {annualSalary}");
         }
 
         [Fact]
@@ -106,7 +99,7 @@ namespace Payslip.UnitTests
 
         private Calculator BuildCalculator()
         {
-            return new Calculator(TaxRates);
+            return new Calculator(Constants.TaxRates);
         }
         
         Employee BuildValidEmployee()

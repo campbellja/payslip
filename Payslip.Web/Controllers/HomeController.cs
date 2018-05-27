@@ -12,6 +12,7 @@ namespace Payslip.Web.Controllers
 {
     public class HomeController : Controller
     {
+        private const string FileDownloadName = "payslips.csv";
         private readonly IPayslipService _payslipService;
 
         public HomeController(IPayslipService payslipService)
@@ -33,15 +34,14 @@ namespace Payslip.Web.Controllers
                 return View(model);
             }
             var validationContext = new ValidationContext();
-            var records = _payslipService.GeneratePayslipsFromStream(model.InputFile.OpenReadStream(), validationContext);
+            var bytes = _payslipService.GeneratePayslipsFromStream(model.InputFile.OpenReadStream(), validationContext);
             if (!validationContext.IsValid)
             {
                 model.Errors = $"Validation Error: {String.Join(",", validationContext.ValidationErrors)}";
                 return View(model);
             }
-            
-            model.Results = records;
-            return View(model);
+
+            return File(bytes, "text/csv", FileDownloadName);
         }
 
         //[HttpPost]
@@ -63,9 +63,9 @@ namespace Payslip.Web.Controllers
         //    );
         //    var results = new Calculator(TaxRates).Calculate(employees);
 
-        //    string fileName = "payslips.csv";
-        //    var bytes = _payslipRepository.WriteRecordsToBytes(results);
-        //    byte[] fileBytes = bytes;
+        //string fileName = "payslips.csv";
+        //var bytes = _payslipRepository.WriteRecordsToBytes(results);
+        //byte[] fileBytes = bytes;
         //    return File(fileBytes, "text/csv", fileName);
         //}
 

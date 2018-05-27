@@ -21,7 +21,7 @@ namespace Payslip.Service
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IEnumerable<EmployeePayslip> GeneratePayslipsFromStream(Stream stream, IValidationContext validationContext)
+        public byte[] GeneratePayslipsFromStream(Stream stream, IValidationContext validationContext)
         {
             IEnumerable<Employee> employees;
             try
@@ -34,7 +34,8 @@ namespace Payslip.Service
                 throw;
             }
             _logger.LogInformation($"Processing {employees.Count()} records...");
-            return _calculator.Calculate(employees, validationContext);
+            var payslips = _calculator.Calculate(employees, validationContext);
+            return _payslipRepository.WriteRecordsToBytes(payslips);
         }
     }
 }
