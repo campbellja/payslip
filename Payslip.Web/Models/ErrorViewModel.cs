@@ -20,7 +20,7 @@ namespace Payslip.Web.Models
     {
         [Required]
         [Display(Description = "CSV File")]
-        public IFormFile InputFile { get; set; }
+        public IFormFile EmployeeInputFile { get; set; }
         public IEnumerable<EmployeePayslip> Results { get; set; }
         public string Errors { get; set; }
     }

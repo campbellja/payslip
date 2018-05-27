@@ -13,16 +13,13 @@
         }
         <form method="post" enctype="multipart/form-data" asp-action="Index">
             <div class="form-group">
-                <label asp-for="InputFile" class="control-label">Employee File</label>
-                <input asp-for="InputFile" type="file" class="form-control" />
-                <span asp-validation-for="InputFile" class="text-danger"></span>
-                <em>File must be in Comma-separated values (CSV) format.</em>
+                <label asp-for="EmployeeInputFile" class="control-label">Employee Input File</label>
+                <input asp-for="EmployeeInputFile" type="file" class="form-control" />
+                <span asp-validation-for="EmployeeInputFile" class="text-danger"></span>
+                <em>File must be in Comma-separated Values (CSV) format.</em>
             </div>
             <div class="form-group">
-                <input type="submit" value="Upload" class="btn btn-default" />
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Generate Payslips" class="btn btn-default" />
+                <input type="submit" value="Generate Payslips..." class="btn btn-success" />
             </div>
         </form>
     </div>
