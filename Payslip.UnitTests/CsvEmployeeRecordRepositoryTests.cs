@@ -1,6 +1,8 @@
+using System;
 using System.IO;
 using System.Linq;
 using Payslip.DataAccess;
+using Payslip.Model;
 using Shouldly;
 using Xunit;
 using Record = Payslip.DataAccess.Record;
@@ -9,17 +11,17 @@ namespace Payslip.UnitTests
 {
     public sealed class CsvEmployeeRecordRepositoryTests
     {
+
         private static CsvEmployeeRecordRepository BuildCsvEmployeeRecordRepository()
         {
             return new CsvEmployeeRecordRepository();
         }
 
         [Fact]
-        public void ReadRecords_ValidCsvFile_ReturnsRecords()
+        public void ReadRecordsFromStream_CsvFileStream_ReturnsRecords()
         {
             // arrange
-            const string filePath = @"C:\source\github\margherita-pizza\doc\input.csv";
-            
+            var inputCsvFilePath = Path.Combine(Directory.GetCurrentDirectory(), @"TestData\input.csv");
             var expected = new[]
             {
                 new Record
@@ -42,7 +44,7 @@ namespace Payslip.UnitTests
 
             // act
             Record[] records;
-            using (var fileStream = File.OpenRead(filePath))
+            using (var fileStream = File.OpenRead(inputCsvFilePath))
             {
                 records = BuildCsvEmployeeRecordRepository().ReadRecordsFromStream(fileStream).ToArray();
             }
@@ -59,10 +61,40 @@ namespace Payslip.UnitTests
         }
 
         [Fact]
-        public void WriteRecordToStream()
+        public void WriteRecordsToBytes_Payslips_WriteCsvLinesToByteArray()
         {
-            
-            //BuildCsvEmployeeRecordRepository().ReadRecordsToBytes()
+            // arrange
+            const decimal @decimal = 12345678M;
+            var payslips = new[]
+            {
+                new EmployeePayslip
+                {
+                    Name = BuildRandomString(),
+                    PayPeriod = BuildRandomString(),
+                    GrossIncome = @decimal,
+                    IncomeTax = @decimal,
+                    NetIncome = @decimal,
+                    Super = @decimal
+                }
+            };
+            // act
+            var bytes = BuildCsvEmployeeRecordRepository().WriteRecordsToBytes(payslips);
+            // assert
+            using (var stream = new StreamReader(new MemoryStream(bytes)))
+            {
+                var actualHeader = stream.ReadLine();
+                actualHeader.ShouldContain("Name,PayPeriod,GrossIncome,IncomeTax,NetIncome,Super");
+                foreach (var p in payslips)
+                {
+                    var line = stream.ReadLine();
+                    line.ShouldContain($"{p.Name},{p.PayPeriod},{p.GrossIncome},{p.IncomeTax},{p.NetIncome},{p.Super}");
+                }
+            } 
+        }
+
+        private string BuildRandomString()
+        {
+            return Guid.NewGuid() + "";
         }
     }
 }

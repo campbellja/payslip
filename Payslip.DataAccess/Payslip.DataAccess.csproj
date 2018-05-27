@@ -8,4 +8,8 @@
     <PackageReference Include="CsvHelper" Version="7.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Payslip.Model\Payslip.Model.csproj" />
+  </ItemGroup>
+
 </Project>
