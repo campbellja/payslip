@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using CsvHelper;
@@ -13,11 +14,11 @@ namespace Payslip.DataAccess
             using (var streamReader = new StreamReader(stream))
             using (var csvReader = new CsvReader(streamReader))
             {
+                csvReader.Configuration.RegisterClassMap<RecordClassMapping>();
                 csvReader.Configuration.PrepareHeaderForMatch = header => header.Replace("_", string.Empty).ToLowerInvariant();
                 return csvReader.GetRecords<T>().ToArray();
             }
         }
-
         public byte[] WriteRecordsToBytes<T>(IEnumerable<T> records)
         {
             using (var memoryStream = new MemoryStream())

@@ -22,42 +22,42 @@ namespace Payslip.UnitTests
         public void ReadRecordsFromStream_CsvFileStream_ReturnsRecords()
         {
             // arrange
-            var inputCsvFilePath = Path.Combine(Directory.GetCurrentDirectory(), @"TestData\input.csv");
-            var expected = new[]
+            var inputCsvFile = CsvFile();
+            var expectedRecords = new[]
             {
                 new Record
                 {
                     FirstName="David",
                     LastName="Rudd",
-                    AnnualSalary="60050",
-                    SuperRate="9%",
+                    AnnualSalary= 60050M,
+                    SuperRate=0.09M,
                     PaymentStartDate = "01 March - 31 March"
                 },
                 new Record
                 {
                     FirstName="Ryan",
                     LastName="Chen",
-                    AnnualSalary="120000",
-                    SuperRate="10%",
+                    AnnualSalary=120000M,
+                    SuperRate=0.1M,
                     PaymentStartDate = "01 March - 31 March"
                 }
             };
 
             // act
             Record[] records;
-            using (var fileStream = File.OpenRead(inputCsvFilePath))
+            using (var fileStream = inputCsvFile)
             {
                 records = BuildCsvEmployeeRecordRepository().ReadRecordsFromStream<Record>(fileStream).ToArray();
             }
 
             // assert
-            for (var i = 0; i < expected.Length; i++)
+            for (var i = 0; i < expectedRecords.Length; i++)
             {
-                records[i].FirstName.ShouldBe(expected[i].FirstName);
-                records[i].LastName.ShouldBe(expected[i].LastName);
-                records[i].AnnualSalary.ShouldBe(expected[i].AnnualSalary);
-                records[i].SuperRate.ShouldBe(expected[i].SuperRate);
-                records[i].PaymentStartDate.ShouldBe(expected[i].PaymentStartDate);
+                records[i].FirstName.ShouldBe(expectedRecords[i].FirstName);
+                records[i].LastName.ShouldBe(expectedRecords[i].LastName);
+                records[i].AnnualSalary.ShouldBe(expectedRecords[i].AnnualSalary);
+                records[i].SuperRate.ShouldBe(expectedRecords[i].SuperRate);
+                records[i].PaymentStartDate.ShouldBe(expectedRecords[i].PaymentStartDate);
             }
         }
 
@@ -65,17 +65,18 @@ namespace Payslip.UnitTests
         [Fact]
         public void ReadRecordsFromStream_ReadFileStream_DisposesStream()
         {
+            // arrange & act
+            using (var fileStream = CsvFile())
             {
-                // arrange
-                var inputCsvFilePath = Path.Combine(Directory.GetCurrentDirectory(), @"TestData\input.csv");
-                // act
-                using (var fileStream = File.OpenRead(inputCsvFilePath))
-                {
-                    BuildCsvEmployeeRecordRepository().ReadRecordsFromStream<Record>(fileStream);
-                    // assert
-                    Assert.Throws<ObjectDisposedException>(() => fileStream.ReadByte());
-                }
+                BuildCsvEmployeeRecordRepository().ReadRecordsFromStream<Record>(fileStream);
+                // assert
+                Assert.Throws<ObjectDisposedException>(() => fileStream.ReadByte());
             }
+        }
+
+        private static FileStream CsvFile()
+        {
+            return File.OpenRead(Path.Combine(Directory.GetCurrentDirectory(), @"TestData\input.csv"));
         }
 
         [Category("Integration")]
