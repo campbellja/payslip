@@ -17,9 +17,9 @@ namespace Payslip.Web.Controllers
         private const string FileDownloadName = "payslips.csv";
         private const string PayslipDataSessionKey = "payslip_csv";
         private readonly IPayslipService _payslipService;
-        private readonly ILogger _logger;
+        private readonly ILogger<HomeController> _logger;
 
-        public HomeController(IPayslipService payslipService, ILogger logger)
+        public HomeController(IPayslipService payslipService, ILogger<HomeController> logger)
         {
             _payslipService = payslipService ?? throw new ArgumentNullException(nameof(payslipService));
             _logger = logger;
