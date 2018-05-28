@@ -52,7 +52,7 @@ namespace Payslip.UnitTests
                     LastName="Harvey",
                     AnnualSalary=125000M,
                     SuperRate=0.1M,
-                    PaymentStartDate = new PaymentPeriod(new DateTime(currentYear, 6, 1),new DateTime(currentYear, 6, 30))
+                    PaymentStartDate = new PaymentPeriod(new DateTime(currentYear, 6, 1),new DateTime(currentYear, 7, 31))
                 }
             };
             

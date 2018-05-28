@@ -2,4 +2,4 @@ using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Payslip.UnitTests")]
+[assembly: InternalsVisibleTo("Payslip.Tests")]

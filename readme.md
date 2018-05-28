@@ -1,6 +1,5 @@
 # Payslip
-Payslip is a web application for generating employee payslips. It accepts an input file containing employee information and outputs payments for each employee's payment period.
-
+Payslip is a web application for generating employee payslips. It accepts a single CSV input file containing employee information and outputs CSV file containig payslips for each employee's payment period.
 
 # Prerequisites
 1. .NET Core 2.1 SDK
@@ -14,16 +13,16 @@ Payslip is a web application for generating employee payslips. It accepts an inp
 
 ## How to Run the Tests
 
-        dotnet test .\Payslip.UnitTests
+        dotnet test .\Payslip.Tests
 
 ## How to Run Payslip
 1. Execute the following to launch the web app using local hosting: 
 
         dotnet run --project .\Payslip.Web
 
-2. An example Employee file is located here: 
+2. Example Employee files are located here: 
 
-        Payslip.UnitTests\TestData\input.csv
+        Payslip.Tests\TestData
 
 ## Packages used:
 - AspNetCore `https://www.asp.net/`
@@ -34,10 +33,22 @@ Payslip is a web application for generating employee payslips. It accepts an inp
     A CSV text parsing package for .net core - useful for reading/writing CSV file formats.
 
 # Design
-## Assumptions
+Payslip is a ASP .NET Core MVC web application
 
-### Super Rate
-Superannuation rate percentages are appended with a `%` symbol in the Employee input file.
+`Payslip.Web`: Web frontend for interacting with the Payslip Service to generate Payslips;
+
+`Payslip.Model`: Payslip calculation domain models and classes;
+
+`Payslip.Service`: Contains the Payslip service for processing and outputting Payslips. This can be consumed by another service, console app or web app;
+
+`Payslip.DataAccess`: For processing input files and outputting CSV files, and
+
+`Payslip.Tests`: Unit tests and integration tests for testing file processing and calculation behaviours.
+
+## Employee Input Assumptions
+`Annual Salary`: This is a positive integer and any negative or fractional values will not be accepted.
+
+`Super Rate`: Superannuation rate percentages are appended with a `%` symbol in the Employee input file.
 
 ### Pay Periods
 `Whole Months`: A Pay Period is defined as a date range of whole months; ranges for partial months are not valid input.
@@ -45,9 +56,9 @@ If the inputted date range exceeds one calender month, an additional payslip ent
 
 `Implicit Year`: Unless specified, the year of the inputted Pay Periods are implicitly the current year on the web server hosting Payslip.
 
-### Output Format
+## Payslip Output Assumptions
 
-### Order
-The output payslips are ordered chronologically by Pay Period.
+### Ordered by Employee Input
+The order of each employee in the input file determines the order of employee payslips outputted by the app.
 
 
