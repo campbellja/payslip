@@ -17,6 +17,10 @@ Payslip is a web application for generating employee payslips. It accepts a sing
 
 ## How to Run the Tests
 
+        ./test.cmd
+
+        or
+
         dotnet test .\Payslip.Tests
 
 ## How to Run Payslip
