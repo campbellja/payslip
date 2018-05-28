@@ -1,35 +1,77 @@
-﻿@model SubmissionModel
+﻿@model SubmissionViewModel
 @{
     ViewData["Title"] = "Home Page";
 }
-
+@{
+    var hasResults = Model.Results != null;
+}
 <div class="row">
-    <div class="col-md-3">
-        <h2>Generate Payslips from Employee File</h2>
-        
-        @if (!String.IsNullOrEmpty(Model.Errors))
-        {
-            <p class="text-danger">@Model.Errors</p>
-        }
+    <div class="col-md-8">
+        <h1>Generate Payslips from Employee File</h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
         <form method="post" enctype="multipart/form-data" asp-action="Index">
             <div class="form-group">
                 <label asp-for="EmployeeInputFile" class="control-label">Employee Input File</label>
                 <input asp-for="EmployeeInputFile" type="file" class="form-control" />
                 <span asp-validation-for="EmployeeInputFile" class="text-danger"></span>
-                <em>File must be in Comma-separated Values (CSV) format.</em>
+                <p>
+                    <em>File must be in Comma-separated Values (CSV) format.</em>
+                </p>
             </div>
+            
+            @if (!String.IsNullOrEmpty(Model.Errors))
+            {
+                <p class="text-danger">@Model.Errors</p>
+            }
             <div class="form-group">
-                <input type="submit" value="Generate Payslips..." class="btn btn-success" />
+                <input type="submit" value="Generate Payslips" class="btn btn-success" />
             </div>
+            @if (hasResults)
+            {
+                <p>@Html.ActionLink("Download Payslips File...", "DownloadFile", "Home", null, new {@class = "btn btn-info"})</p>
+            }
         </form>
     </div>
-    <div class="col-md-9">
-        @if (Model.Results != null)
-    {
-        <h2>Results</h2>
-        <p>Employee Payslips</p>
-        <table class="table">
-            <thead>
+    <div class="col-md-8">
+        @if (Model.Employees != null)
+        {
+            <h3>Employees</h3>
+            <p>
+                <span></span>
+            </p>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>first_name,</th>
+                    <th>last_name,</th>
+                    <th>annual_salary,</th>
+                    <th>super_rate (%),</th>
+                    <th>payment_start_date (start - end)</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in Model.Employees)
+                {
+                    <tr>
+                        <td><span>@e.FirstName</span></td>
+                        <td><span>@e.LastName</span></td>
+                        <td><span>@e.AnnualSalary</span></td>
+                        <td><span>@e.SuperRate</span></td>
+                        <td><span>@e.PaymentStartDate</span></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+        @if (hasResults)
+        {
+            <h2>Results</h2>
+            <p>Employee Payslips</p>
+            <table class="table">
+                <thead>
                 <tr>
                     <th>Name</th>
                     <th>Payment Period</th>
@@ -38,48 +80,48 @@
                     <th>Net Income</th>
                     <th>Super Amount</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 @foreach (var r in Model.Results)
-            {
-                <tr>
-                    <td>@r.Name</td>
-                    <td>@r.PayPeriod</td>
-                    <td>@r.GrossIncome</td>
-                    <td>@r.IncomeTax</td>
-                    <td>@r.NetIncome</td>
-                    <td>@r.Super</td>
-                </tr>
+                {
+                    <tr>
+                        <td>@r.Name</td>
+                        <td>@r.PayPeriod</td>
+                        <td>@r.GrossIncome</td>
+                        <td>@r.IncomeTax</td>
+                        <td>@r.NetIncome</td>
+                        <td>@r.Super</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
         }
-            </tbody>
-        </table>
-}
-else
-{
-    <h3>Employee File Example</h3>
-    <p>
-        <span>Here's an example of the CSV header and record structure that the Employee File must contain:</span>
-    </p>
-    <h3>Example:</h3>
-    <table class="table">
-        <thead>
-        <tr>
-            <th>first_name,</th>
-            <th>last_name,</th>
-            <th>annual_salary,</th>
-            <th>super_rate,</th>
-            <th>payment_start_date</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td><span>David,</span></td><td><span>Rudd,</span></td><td><span>60050,</span></td><td><span>9%,</span></td><td><span>01 March - 31 March</span></td>
-        </tr>
-        <tr>
-            <td><span>Ryan,</span></td><td><span>Chen,</span></td><td><span>120000,</span></td><td><span>10%,</span></td><td><span>01 March - 31 March</span></td>
-        </tr>
-        </tbody>
-    </table>
-}
+        else
+        {
+            <h3>Employee File Example</h3>
+            <p>
+                <span>Here's an example of the CSV header and record structure that the Employee File must contain:</span>
+            </p>
+            <h3>Example:</h3>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>first_name,</th>
+                    <th>last_name,</th>
+                    <th>annual_salary,</th>
+                    <th>super_rate,</th>
+                    <th>payment_start_date</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><span>David,</span></td><td><span>Rudd,</span></td><td><span>60050,</span></td><td><span>9%,</span></td><td><span>01 March - 31 March</span></td>
+                </tr>
+                <tr>
+                    <td><span>Ryan,</span></td><td><span>Chen,</span></td><td><span>120000,</span></td><td><span>10%,</span></td><td><span>01 March - 31 March</span></td>
+                </tr>
+                </tbody>
+            </table>
+        }
     </div>
 </div>

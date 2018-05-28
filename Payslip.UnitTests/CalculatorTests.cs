@@ -18,13 +18,19 @@ namespace Payslip.UnitTests
             // arrange
             var validationContext = new ValidationContext();
             const decimal annualSalary = -1.00M;
+            var employee = new Employee(BuildRandomString(), BuildRandomString(), annualSalary, 0M, new PaymentPeriod(new DateTime(2018, 3, 1), new DateTime(2018, 3, 31)));
             // act
-            BuildCalculator().Calculate(
-                new[] { new Employee(BuildRandomString(), BuildRandomString(), annualSalary, 0M, new PaymentPeriod(new DateTime(2018, 3, 1), new DateTime(2018, 3, 31))) },
-                validationContext
-            );
+            BuildSutAndValidate(employee, validationContext);
             // assert
             validationContext.ValidationErrors.ShouldContain($"{nameof(annualSalary)} must not be a negative decimal, was: {annualSalary}");
+        }
+
+        private void BuildSutAndValidate(Employee employee, ValidationContext validationContext)
+        {
+            BuildCalculator().Calculate(
+                new[] {employee},
+                validationContext
+            );
         }
 
         [Fact]
@@ -33,11 +39,9 @@ namespace Payslip.UnitTests
             // arrange
             var validationContext = new ValidationContext();
             const decimal annualSalary = 1.01M;
+            var employee = new Employee(BuildRandomString(), BuildRandomString(), annualSalary, 0M, new PaymentPeriod(new DateTime(2018, 3, 1), new DateTime(2018, 3, 31)));
             // act
-            BuildCalculator().Calculate(
-                        new []{ new Employee(BuildRandomString(), BuildRandomString(), annualSalary, 0M, new PaymentPeriod(new DateTime(2018, 3, 1), new DateTime(2018, 3, 31))) },
-                        validationContext
-            );
+            BuildSutAndValidate(employee, validationContext);
             // assert
             validationContext.ValidationErrors.ShouldContain($"{nameof(annualSalary)} must be a whole number, was: {annualSalary}");
         }
@@ -49,9 +53,10 @@ namespace Payslip.UnitTests
         }
 
         [Fact]
-        public void Calculate_TaxRatesInitialised_ReturnsPayslip()
+        public void Calculate_MultiplePaymentPeriods_ReturnsPayslipForEachPeriod()
         {
             // arrange
+            var validationContext = new ValidationContext();
             var input = new[] {
                 new Employee{
                     FirstName = BuildRandomString(),
@@ -77,9 +82,7 @@ namespace Payslip.UnitTests
                 }
             };
             // act
-            var validationContext = new ValidationContext();
             var result = BuildCalculator().Calculate(input, validationContext);
-            validationContext.IsValid.ShouldBeTrue();
             // assert 
             var payslips = result.ToArray();
             foreach (var payslip in payslips)
@@ -90,6 +93,8 @@ namespace Payslip.UnitTests
                 payslip.Super.ShouldBe(450);
             }
             payslips.Count().ShouldBe(5);
+
+            validationContext.IsValid.ShouldBeTrue();
         }
 
         private static string BuildRandomString()
@@ -100,19 +105,6 @@ namespace Payslip.UnitTests
         private Calculator BuildCalculator()
         {
             return new Calculator(Constants.TaxRates);
-        }
-        
-        Employee BuildValidEmployee()
-        {            
-            return new Employee{AnnualSalary = 95000M};
-        }
-
-                        
-        [Fact]
-        public void RoundUp_DecimalGreaterThanEqualTo50_RoundToNextDollar()
-        {
-            0.50M.RoundUpToNearestDollar().ShouldBe(1M);
-            0.50M.RoundDownToNearestDollar().ShouldBe(0M);
         }
     }
 }

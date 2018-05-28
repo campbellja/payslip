@@ -29,9 +29,15 @@ namespace Payslip.Web
             services.AddMvc();
             services.AddLogging(configure => configure.AddConsole())
                 .Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Information);
-                
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromSeconds(10);
+                options.Cookie.HttpOnly = true;
+            });
+
             // Payslip-Specific 
-            services.AddTransient<IPayslipRepository, CsvPayslipRepository>();
+            services.AddTransient<IEmployeeRepository, CsvEmployeeRepository>();
             services.AddTransient<IPayslipService, PayslipService>();
         }
 
@@ -48,7 +54,7 @@ namespace Payslip.Web
             }
 
             app.UseStaticFiles();
-
+            app.UseSession();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

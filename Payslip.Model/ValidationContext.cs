@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Payslip.Model
 {
-    public interface IValidationContext
-    {
-        bool IsValid { get; }
-        IEnumerable<string> ValidationErrors { get; }
-        void AddError(string message);
-    }
-
     public sealed class ValidationContext : IValidationContext
     {
         private readonly List<string> _validationErrors = new List<string>();

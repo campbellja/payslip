@@ -7,7 +7,7 @@ using Payslip.Model;
 
 namespace Payslip.DataAccess
 {
-    public sealed class CsvPayslipRepository : IPayslipRepository
+    public sealed class CsvEmployeeRepository : IEmployeeRepository
     {
         public IEnumerable<T> ReadRecordsFromStream<T>(Stream stream)
         {

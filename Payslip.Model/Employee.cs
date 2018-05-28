@@ -15,7 +15,6 @@ namespace Payslip.Model
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public decimal AnnualSalary { get; set; }
-
         public decimal SuperRate { get; set; }
         public PaymentPeriod PaymentStartDate { get; set; }
 

@@ -44,11 +44,12 @@ namespace Payslip.Model
         public IEnumerable<EmployeePayslip> Calculate(IEnumerable<Employee> employees, IValidationContext validationContext)
         {
             List<EmployeePayslip> result = null;
-            Validate(employees, validationContext);
+            var employeeList = employees.ToList();
+            Validate(employeeList, validationContext);
 
             if (validationContext.IsValid)
             {
-                result = (from e in employees
+                result = (from e in employeeList
                         let salary = e.AnnualSalary
                         let rate = _taxRates.Single(t => t.IsWithinIncomeRange(salary))
                         let superRate = e.SuperRate

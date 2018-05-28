@@ -6,6 +6,8 @@ namespace Payslip.Service
 {
     public interface IPayslipService
     {
-        byte[] GeneratePayslipsFromStream(Stream stream, IValidationContext validationContext);
+        IEnumerable<Employee> ReadRecordsFromStream(Stream stream);
+        IEnumerable<EmployeePayslip> GeneratePayslipsFromStream(IEnumerable<Employee> employees, IValidationContext validationContext);
+        byte[] WritePayslipsToByteArray(IEnumerable<EmployeePayslip> payslips);
     }
 }

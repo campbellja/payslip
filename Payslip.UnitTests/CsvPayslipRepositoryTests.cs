@@ -16,9 +16,9 @@ namespace Payslip.UnitTests
             return File.OpenRead(Path.Combine(Directory.GetCurrentDirectory(), @"TestData\input.csv"));
         }
 
-        private static CsvPayslipRepository BuildCsvEmployeeRecordRepository()
+        private static CsvEmployeeRepository BuildCsvEmployeeRecordRepository()
         {
-            return new CsvPayslipRepository();
+            return new CsvEmployeeRepository();
         }
 
         [Category("Integration")]

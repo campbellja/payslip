@@ -28,5 +28,10 @@ namespace Payslip.Model
             paymentPeriod = default(PaymentPeriod);
             return false;
         }
+
+        public override string ToString()
+        {
+            return $"{StartDate.ToShortDateString()} - {EndDate.ToShortDateString()}";
+        }
     }
 }

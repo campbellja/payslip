@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CsvHelper;
 using Microsoft.Extensions.Logging;
 using Payslip.DataAccess;
 using Payslip.Model;
@@ -10,32 +11,45 @@ namespace Payslip.Service
 {
     public sealed class PayslipService : IPayslipService
     {
-        private readonly IPayslipRepository _payslipRepository;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly ILogger<PayslipService> _logger;
         private readonly Calculator _calculator;
 
-        public PayslipService(IPayslipRepository payslipRepository, ILogger<PayslipService> logger)
+        public PayslipService(IEmployeeRepository employeeRepository, ILogger<PayslipService> logger)
         {
-            _payslipRepository = payslipRepository ?? throw new ArgumentNullException(nameof(payslipRepository));
+            _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
             _calculator = new Calculator(Constants.TaxRates);
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public byte[] GeneratePayslipsFromStream(Stream stream, IValidationContext validationContext)
+        public IEnumerable<Employee> ReadRecordsFromStream(Stream stream)
         {
-            IEnumerable<Employee> employees;
             try
             {
-                employees = _payslipRepository.ReadRecordsFromStream<Employee>(stream);
+                return _employeeRepository.ReadRecordsFromStream<Employee>(stream);
             }
             catch (IOException ioe)
             {
-                _logger.LogError(ioe, $"{nameof(IOException)} thrown reading employee records from file stream");
+                _logger.LogError(ioe, $"{nameof(IOException)} thrown reading {nameof(Employee)} records from file stream");
                 throw;
             }
-            _logger.LogInformation($"Processing {employees.Count()} records...");
-            var payslips = _calculator.Calculate(employees, validationContext);
-            return _payslipRepository.WriteRecordsToBytes(payslips);
+            catch (ReaderException re)
+            {
+                _logger.LogError(re, $"{nameof(ReaderException)} thrown reading {nameof(Employee)} records from file stream");
+                throw;
+            }
+        }
+
+        public IEnumerable<EmployeePayslip> GeneratePayslipsFromStream(IEnumerable<Employee> employees, IValidationContext validationContext)
+        {
+            var employeeList = employees.ToList();
+            _logger.LogInformation($"Processing {employeeList.Count} records...");
+            return _calculator.Calculate(employeeList, validationContext);
+        }
+
+        public byte[] WritePayslipsToByteArray(IEnumerable<EmployeePayslip> payslips)
+        {
+            return _employeeRepository.WriteRecordsToBytes(payslips);
         }
     }
 }
