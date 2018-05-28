@@ -6,7 +6,11 @@ Payslip is a web application for generating employee payslips. It accepts a sing
 
 ## How to Build Payslip
 1. Open a command prompt;
-1. Run `build.cmd`, or alternatively enter:
+1. Enter the following commmand:
+
+        ./build.cmd
+        
+        or
 
         dotnet restore
         dotnet build
@@ -17,6 +21,10 @@ Payslip is a web application for generating employee payslips. It accepts a sing
 
 ## How to Run Payslip
 1. Execute the following to launch the web app using local hosting: 
+
+        ./run.cmd
+
+        or
 
         dotnet run --project .\Payslip.Web
 
