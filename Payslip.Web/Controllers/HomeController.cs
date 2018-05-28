@@ -5,6 +5,7 @@ using System.Linq;
 using CsvHelper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Payslip.Model;
 using Payslip.Service;
 using Payslip.Web.Models;
@@ -16,10 +17,12 @@ namespace Payslip.Web.Controllers
         private const string FileDownloadName = "payslips.csv";
         private const string PayslipDataSessionKey = "payslip_csv";
         private readonly IPayslipService _payslipService;
+        private readonly ILogger _logger;
 
-        public HomeController(IPayslipService payslipService)
+        public HomeController(IPayslipService payslipService, ILogger logger)
         {
             _payslipService = payslipService ?? throw new ArgumentNullException(nameof(payslipService));
+            _logger = logger;
         }
 
         public IActionResult Index()
@@ -40,8 +43,18 @@ namespace Payslip.Web.Controllers
             if (employees != null)
             {
                 var employeesList = employees.ToList();
+                try
+                {
+                    GeneratePayslips(employeesList, viewModel);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error generating Payslips from uploaded Employee file");
+                    viewModel.Errors = $"Error generating Payslips from uploaded Employee file: {e.Message}";
+                    return View(viewModel);
+                }
+
                 viewModel.Employees = employeesList.Select(e => new EmployeeViewModel(e));
-                GeneratePayslips(employeesList, viewModel);
             }
             return View(viewModel);
         }
@@ -71,9 +84,10 @@ namespace Payslip.Web.Controllers
             {
                 employees = _payslipService.ReadRecordsFromStream(stream).ToList();
             }
-            catch (Exception re)
+            catch (Exception e)
             {
-                viewModel.Errors = $"Error reading Employees from CSV File: {re.Message}";
+                _logger.LogError(e, "Error reading Employees from CSV File");
+                viewModel.Errors = $"Error reading Employees from CSV File: {e.Message}";
             }
 
             return employees;

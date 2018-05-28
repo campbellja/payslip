@@ -32,8 +32,16 @@ Payslip is a web application for generating employee payslips. It accepts a sing
     
     A CSV text parsing package for .net core - useful for reading/writing CSV file formats.
 
+For testing:
+- Xunit: `https://github.com/xunit/xunit`
+
+    Unit-testing framework supported by .net core scaffolding utilities.
+- Shouldly `https://github.com/shouldly/shouldly`
+
+    An assertion framework for simple, concise test assertions.
+
 # Design
-Payslip is a ASP .NET Core MVC web application
+Payslip is a ASP .NET Core MVC web application containing five assemblies:
 
 `Payslip.Web`: Web frontend for interacting with the Payslip Service to generate Payslips;
 
@@ -44,6 +52,8 @@ Payslip is a ASP .NET Core MVC web application
 `Payslip.DataAccess`: For processing input files and outputting CSV files, and
 
 `Payslip.Tests`: Unit tests and integration tests for testing file processing and calculation behaviours.
+
+The payslip calculation logic operates on a `TaxRates` table defined in code (See: `Payslip.Model.Constants.TaxRates`).
 
 ## Employee Input Assumptions
 `Annual Salary`: This is a positive integer and any negative or fractional values will not be accepted.

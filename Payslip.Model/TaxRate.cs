@@ -2,6 +2,10 @@ using System;
 
 namespace Payslip.Model
 {
+    /// <summary>
+    /// An individual income tax rate modelled after the official ATO tax rates.
+    /// See: https://www.ato.gov.au/Rates/Individual-income-tax-rates/
+    /// </summary>
     public sealed class TaxRate
     {
         private decimal MinIncome { get; }

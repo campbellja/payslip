@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Payslip.Model;
 
 namespace Payslip.Model
 {
+    /// <summary>
+    /// Calculates employee payslips for a collection of employee salary details and tax rates.
+    /// </summary>
     public class Calculator
     {
         private const decimal MonthsInYear = 12M;

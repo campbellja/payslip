@@ -17,6 +17,5 @@ namespace Payslip.Model
             TaxRate.Create( 87_001M, 180_000M, 0.37M, 19_822M),
             TaxRate.TopTierRate( 180_001M, 0.45M, 54_232M ),
         };
-
     }
 }

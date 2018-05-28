@@ -2,6 +2,9 @@ using System;
 
 namespace Payslip.Model
 {
+    /// <summary>
+    /// A payment period represented as a date range of two DateTime objects.
+    /// </summary>
     public sealed class PaymentPeriod
     {
         public DateTime StartDate { get; internal set; }

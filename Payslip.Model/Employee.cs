@@ -1,5 +1,8 @@
 namespace Payslip.Model
 {
+    /// <summary>
+    /// Represents employee identification, salary and payment details.
+    /// </summary>
     public sealed class Employee
     {
         public Employee() { }
@@ -17,6 +20,5 @@ namespace Payslip.Model
         public decimal AnnualSalary { get; set; }
         public decimal SuperRate { get; set; }
         public PaymentPeriod PaymentStartDate { get; set; }
-
     }
 }

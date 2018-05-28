@@ -1,5 +1,8 @@
 namespace Payslip.Model
 {
+    /// <summary>
+    /// A payslip for a specific Employee payment period.
+    /// </summary>
     public class EmployeePayslip
     {
         public string Name { get; set; }
@@ -8,6 +11,5 @@ namespace Payslip.Model
         public decimal IncomeTax { get; set; }
         public decimal NetIncome { get; set; }
         public decimal Super { get; set; }
-
     }
 }
